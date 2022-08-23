@@ -4,19 +4,21 @@ from .models import User
 from .models import Category, Comment, Genre, Review, Title, TitleGenre
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
+from import_export.fields import Field
+from import_export.widgets import DateTimeWidget
 
 
 @admin.register(Title)
-class TitleAdmin(admin.ModelAdmin):
+class TitleAdmin(ImportExportModelAdmin):
     """Админка произведений."""
-    # from_encoding = 'utf-8'
+    from_encoding = 'utf-8'
     list_display = (
         'name',
         'year',
         'category',
     )
-    # search_fields = ('name',)
-    # list_filter = ('year',)
+    search_fields = ('name',)
+    list_filter = ('year',)
 
 
 @admin.register(Category)
@@ -43,14 +45,15 @@ class GenreAdmin(ImportExportModelAdmin):
 class TitleGenreAdmin(ImportExportModelAdmin):
     """Админка связей произведений с жанрами."""
     list_display = (
-        'genre',
-        'title'
+        'genre_id',
+        'title_id'
     )
 
 
-from import_export.fields import Field
 class ReviewResource(resources.ModelResource):
-    title = Field(attribute='title', column_name='title_id')
+    widget_datetime = DateTimeWidget(format="%Y-%m-%dT%H:%M:%S%Z")
+    pub_date = Field(widget=widget_datetime)
+
     class Meta:
         model = Review
 
@@ -60,15 +63,25 @@ class ReviewAdmin(ImportExportModelAdmin):
     """Админка ревью."""
     from_encoding = 'utf-8'
     resource_class = ReviewResource
-    list_display = ('pk', 'title', 'text', 'author', 'score', 'pub_date')
+    list_display = ('pk', 'title_id', 'text', 'author', 'score', 'pub_date')
     search_fields = ('text',)
     list_filter = ('pub_date',)
 
 
+class CommentResource(resources.ModelResource):
+    widget_datetime = DateTimeWidget(format="%Y-%m-%dT%H:%M:%S%Z")
+    pub_date = Field(widget=widget_datetime)
+
+    class Meta:
+        model = Comment
+
+
 @admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
+class CommentAdmin(ImportExportModelAdmin):
     """Админка комментариев."""
-    list_display = ('pk', 'review', 'text', 'author', 'pub_date')
+    from_encoding = 'utf-8'
+    resource_class = CommentResource
+    list_display = ('pk', 'review_id', 'text', 'author', 'pub_date')
     search_fields = ('text',)
     list_filter = ('pub_date',)
 
@@ -85,6 +98,7 @@ class UserResource(resources.ModelResource):
             'first_name',
             'last_name'
         )
+
 
 @admin.register(User)
 class UserAdmin(ImportExportModelAdmin):

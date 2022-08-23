@@ -71,21 +71,21 @@ class Title(models.Model):
     # )
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class TitleGenre(models.Model):
     """Модель связывающая произведение с жанрами"""
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.title} относится к жанру {self.genre}'
+        return f'{self.title_id} относится к жанру {self.genre_id}'
 
 
 class Review(models.Model):
     """Модель текстовых отзывов к произведениям."""
-    title = models.ForeignKey(
+    title_id = models.ForeignKey(
         'Title',
         on_delete=models.CASCADE,
         related_name='reviews',
@@ -123,7 +123,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель комментария к ревью."""
-    review = models.ForeignKey(
+    review_id = models.ForeignKey(
         'Review',
         on_delete=models.CASCADE,
         related_name='comments',
