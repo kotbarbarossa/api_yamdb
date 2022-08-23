@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import User
 
-from .models import Category, Comment, Genre, Review, Title
+from .models import Category, Comment, Genre, Review, Title, TitleGenre
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
@@ -9,34 +9,44 @@ from import_export.admin import ImportExportModelAdmin
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     """Админка произведений."""
+    # from_encoding = 'utf-8'
     list_display = (
-        'title',
-        'description',
+        'name',
         'year',
         'category',
     )
-    search_fields = ('title',)
-    list_filter = ('year',)
+    # search_fields = ('name',)
+    # list_filter = ('year',)
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ImportExportModelAdmin):
     """Админка категроий."""
     list_display = (
         'name',
         'slug',
     )
-    search_fields = ('title',)
+    search_fields = ('name',)
 
 
 @admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
+class GenreAdmin(ImportExportModelAdmin):
     """Админка жанров."""
     list_display = (
         'name',
         'slug',
     )
-    search_fields = ('title',)
+    search_fields = ('name',)
+
+
+@admin.register(TitleGenre)
+class TitleGenreAdmin(ImportExportModelAdmin):
+    """Админка связей произведений с жанрами."""
+    list_display = (
+        'genre',
+        'title'
+    )
+
 
 from import_export.fields import Field
 class ReviewResource(resources.ModelResource):
@@ -48,7 +58,7 @@ class ReviewResource(resources.ModelResource):
 @admin.register(Review)
 class ReviewAdmin(ImportExportModelAdmin):
     """Админка ревью."""
-    from_encoding = 'WINDOWS-1251'
+    from_encoding = 'utf-8'
     resource_class = ReviewResource
     list_display = ('pk', 'title', 'text', 'author', 'score', 'pub_date')
     search_fields = ('text',)
@@ -66,7 +76,15 @@ class CommentAdmin(admin.ModelAdmin):
 class UserResource(resources.ModelResource):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'bio', 'first_name', 'last_name')
+        fields = (
+            'id',
+            'username',
+            'email',
+            'role',
+            'bio',
+            'first_name',
+            'last_name'
+        )
 
 @admin.register(User)
 class UserAdmin(ImportExportModelAdmin):

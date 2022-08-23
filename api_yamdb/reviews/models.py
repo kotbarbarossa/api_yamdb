@@ -45,15 +45,15 @@ class Genre(models.Model):
 
 class Title(models.Model):
     """Модель художественного произведения"""
-    title = models.CharField(
+    name = models.CharField(
         max_length=128,
         verbose_name='Название произведения'
     )
-    description = models.TextField(
-        max_length=256,
-        blank=True,
-        null=True,
-        verbose_name='Описание')
+    # description = models.TextField(
+    #     max_length=256,
+    #     blank=True,
+    #     null=True,
+    #     verbose_name='Описание')
     year = models.IntegerField(verbose_name='Год выхода')
     category = models.ForeignKey(
         'Category',
@@ -63,12 +63,12 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория'
     )
-    genre = models.ManyToManyField(
-        'Genre',
-        through='TitleGenre',
-        related_name='titles',
-        verbose_name='Жанр'
-    )
+    # genre = models.ManyToManyField(
+    #     'Genre',
+    #     through='TitleGenre',
+    #     related_name='titles',
+    #     verbose_name='Жанр'
+    # )
 
     def __str__(self):
         return self.title
