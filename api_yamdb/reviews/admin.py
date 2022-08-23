@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import User
 
 from .models import Category, Comment, Genre, Review, Title
 from import_export import resources
@@ -12,8 +13,7 @@ class TitleAdmin(admin.ModelAdmin):
         'title',
         'description',
         'year',
-        'categorie',
-        'genre',
+        'category',
     )
     search_fields = ('title',)
     list_filter = ('year',)
@@ -23,7 +23,7 @@ class TitleAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     """Админка категроий."""
     list_display = (
-        'title',
+        'name',
         'slug',
     )
     search_fields = ('title',)
@@ -33,14 +33,13 @@ class CategoryAdmin(admin.ModelAdmin):
 class GenreAdmin(admin.ModelAdmin):
     """Админка жанров."""
     list_display = (
-        'title',
+        'name',
         'slug',
     )
     search_fields = ('title',)
 
 
 class ReviewResource(resources.ModelResource):
-
     class Meta:
         model = Review
 
@@ -59,3 +58,26 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'review', 'text', 'author', 'pub_date')
     search_fields = ('text',)
     list_filter = ('pub_date',)
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'role',
+    )
+    fieldsets = (
+        (None, {
+            'fields': (
+                'username',
+                'email',
+                'first_name',
+                'last_name',
+                'role',
+                'bio',
+            )
+        }),
+    )

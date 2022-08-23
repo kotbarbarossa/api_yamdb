@@ -1,19 +1,42 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
-class Category:
+class User(AbstractUser):
+    """Модель пользователя."""
+    ROLE = (
+        (
+            ('user', 'Пользователь'),
+            ('admin', 'Администратор'),
+            ('moderator', 'Модератор'),
+        )
+    )
+
+    role = models.CharField(
+        'Пользовательская роль',
+        max_length=10,
+        choices=ROLE,
+        default=''
+    )
+    bio = models.TextField(
+        'Биография',
+        blank=True
+    )
+
+
+class Category(models.Model):
     """Модель для категорий. Присваевается одна на произведение"""
-    title = models.CharField(max_length=48, verbose_name='Название категории')
+    name = models.CharField(max_length=48, verbose_name='Название категории')
     slug = models.SlugField(max_length=48, unique=True)
 
     def __str__(self):
         return self.slug
 
 
-class Genre:
+class Genre(models.Model):
     """Модель для Жанров. Множественное пристваивание на произведение"""
-    title = models.CharField(max_length=48, verbose_name='Название жанра')
+    name = models.CharField(max_length=48, verbose_name='Название жанра')
     slug = models.SlugField(max_length=48, unique=True)
 
     def __str__(self):
@@ -32,8 +55,8 @@ class Title(models.Model):
         null=True,
         verbose_name='Описание')
     year = models.IntegerField(verbose_name='Год выхода')
-    categorie = models.ForeignKey(
-        Category,
+    category = models.ForeignKey(
+        'Category',
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
@@ -41,7 +64,7 @@ class Title(models.Model):
         verbose_name='Категория'
     )
     genre = models.ManyToManyField(
-        Genre,
+        'Genre',
         through='TitleGenre',
         related_name='titles',
         verbose_name='Жанр'
@@ -63,7 +86,7 @@ class TitleGenre(models.Model):
 class Review(models.Model):
     """Модель текстовых отзывов к произведениям."""
     title = models.ForeignKey(
-        Title,
+        'Title',
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение',
@@ -74,7 +97,7 @@ class Review(models.Model):
         help_text='Текст нового ревью'
     )
     author = models.ForeignKey(
-        User,
+        'User',
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Пользователь',
@@ -101,7 +124,7 @@ class Review(models.Model):
 class Comment(models.Model):
     """Модель комментария к ревью."""
     review = models.ForeignKey(
-        Review,
+        'Review',
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Комментарий',
@@ -112,7 +135,7 @@ class Comment(models.Model):
         help_text='Текст комментария'
     )
     author = models.ForeignKey(
-        User,
+        'User',
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Автор',
@@ -127,4 +150,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text[:15]
-
