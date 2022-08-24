@@ -45,9 +45,10 @@ class GenreAdmin(ImportExportModelAdmin):
 class TitleGenreAdmin(ImportExportModelAdmin):
     """Админка связей произведений с жанрами."""
     list_display = (
+        'title_id',
         'genre_id',
-        'title_id'
     )
+    list_filter = ('genre_id',)
 
 
 class ReviewResource(resources.ModelResource):

@@ -30,6 +30,11 @@ class Category(models.Model):
     name = models.CharField(max_length=48, verbose_name='Название категории')
     slug = models.SlugField(max_length=48, unique=True)
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = ('Category')
+        verbose_name_plural = ('Categories')
+
     def __str__(self):
         return self.slug
 
@@ -38,6 +43,11 @@ class Genre(models.Model):
     """Модель для Жанров. Множественное пристваивание на произведение"""
     name = models.CharField(max_length=48, verbose_name='Название жанра')
     slug = models.SlugField(max_length=48, unique=True)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = ('Genre')
+        verbose_name_plural = ('Genres')
 
     def __str__(self):
         return self.slug
@@ -70,14 +80,36 @@ class Title(models.Model):
     #     verbose_name='Жанр'
     # )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = ('Title')
+        verbose_name_plural = ('Titles')
+
     def __str__(self):
         return self.name
 
 
 class TitleGenre(models.Model):
     """Модель связывающая произведение с жанрами"""
-    genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
+    title_id = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Название произведения'
+    )
+    genre_id = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        verbose_name='Название жанра'
+    )
+
+    class Meta:
+        ordering = ('title_id',)
+        verbose_name = ('Title Genre')
+        verbose_name_plural = ('Title Genres')
+        constraints = [
+            models.UniqueConstraint(fields=['title_id', 'genre_id'],
+                                    name=('unique genre')),
+        ]
 
     def __str__(self):
         return f'{self.title_id} относится к жанру {self.genre_id}'
