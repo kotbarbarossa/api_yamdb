@@ -159,8 +159,8 @@ class Comment(models.Model):
         'Review',
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Комментарий',
-        help_text='Комментарий, к ревью'
+        verbose_name='Ревью',
+        help_text='Ревью, к которому пишется комментарий'
     )
     text = models.TextField(
         verbose_name='Текст',
