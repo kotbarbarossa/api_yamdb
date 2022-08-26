@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'reviews',
-    'import_export',
+    # 'import_export',
 ]
 
 MIDDLEWARE = [
