@@ -17,12 +17,17 @@ class User(AbstractUser):
         'Пользовательская роль',
         max_length=10,
         choices=ROLE,
-        default=''
+        default='user'
     )
     bio = models.TextField(
         'Биография',
         blank=True
     )
+
+
+class ConfirmationCode(models.Model):
+    user = models.OneToOneField('User', on_delete=models.CASCADE)
+    token = models.CharField(max_length=255)
 
 
 class Category(models.Model):
@@ -63,6 +68,7 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория'
     )
+
     # genre = models.ManyToManyField(
     #     'Genre',
     #     through='TitleGenre',
