@@ -48,6 +48,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Получение и изменение комментариев."""
     serializer_class = CommentSerializer
 
     def get_queryset(self, *args, **kwargs):
