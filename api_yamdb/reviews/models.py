@@ -117,7 +117,7 @@ class TitleGenre(models.Model):
 
 class Review(models.Model):
     """Модель текстовых отзывов к произведениям."""
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         'Title',
         on_delete=models.CASCADE,
         related_name='reviews',
@@ -155,12 +155,12 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель комментария к ревью."""
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         'Review',
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Комментарий',
-        help_text='Комментарий, к ревью'
+        verbose_name='Ревью',
+        help_text='Ревью, к которому пишется комментарий'
     )
     text = models.TextField(
         verbose_name='Текст',
