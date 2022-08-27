@@ -59,11 +59,11 @@ class Title(models.Model):
         max_length=128,
         verbose_name='Название произведения'
     )
-    # description = models.TextField(
-    #     max_length=256,
-    #     blank=True,
-    #     null=True,
-    #     verbose_name='Описание')
+    description = models.TextField(
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name='Описание')
     year = models.IntegerField(verbose_name='Год выхода')
     category = models.ForeignKey(
         'Category',
@@ -73,12 +73,12 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория'
     )
-    # genre = models.ManyToManyField(
-    #     'Genre',
-    #     through='TitleGenre',
-    #     related_name='titles',
-    #     verbose_name='Жанр'
-    # )
+    genre = models.ManyToManyField(
+        'Genre',
+        through='TitleGenre',
+        related_name='titles',
+        verbose_name='Жанр'
+    )
 
     class Meta:
         ordering = ('name',)
@@ -140,7 +140,9 @@ class Review(models.Model):
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)
-        ]
+        ],
+        verbose_name='Оценка произведения',
+        help_text='Оценка произведения'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
