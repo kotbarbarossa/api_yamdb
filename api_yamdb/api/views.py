@@ -2,10 +2,10 @@ from secrets import token_hex
 
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status, mixins, filters, permissions
+from rest_framework import status, mixins, filters
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
@@ -42,9 +42,10 @@ class MyTokenObtainPairView(TokenViewBase):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminUser,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
+    lookup_field = 'username'
 
 
 class UserMeViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,

@@ -1,26 +1,43 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from requests import Response
-from rest_framework import serializers, exceptions, status
+from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
-from yaml import serializer
 
-import reviews
-from api_yamdb import settings
 from reviews.models import User, ConfirmationCode
-from secrets import token_hex
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())])
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+    def update(self, instance, validated_data):
+        print('\n\n\n\n\n\n\n')
+        print(instance.is_staff)
+        print('\n\n\n\n\n\n\n')
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name',
+                                                 instance.first_name)
+        instance.last_name = validated_data.get('last_name',
+                                                instance.last_name)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.role = validated_data.get('role', instance.role)
+        if validated_data.get('role') == 'admin':
+            instance.is_staff = True
+        if validated_data.get('role') == 'moderator':
+            instance.is_moderator = True
+        instance.save()
+        return instance
 
 
 class UserMeSerializer(serializers.ModelSerializer):
@@ -42,7 +59,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         name = 'me'
-        if validated_data['username'] == name:
+        if validated_data.get('username') == name:
             raise exceptions.ValidationError(
                 f'Использовать имя {name} в качестве username запрещено.'
             )
