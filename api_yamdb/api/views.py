@@ -26,6 +26,8 @@ from .serializers import (
     TitleSerializer,
     TitleWriteSerializer,
 )
+from .permissions import IsAdminOrReadOnlyTwo
+from .filters import TitlesFilter
 
 
 class SignUpView(APIView):
@@ -38,8 +40,10 @@ class SignUpView(APIView):
             user = User.objects.get(username=request.data.get('username'))
             subject = 'Confirmation code'
             message = token_hex(16)
-            ConfirmationCode.objects.create(user=user,
-                                 token=message)
+            ConfirmationCode.objects.create(
+                user=user,
+                token=message
+            )
             send_mail(subject, message, settings.EMAIL_HOST_USER,
                       [request.data.get('email')])
 
@@ -78,38 +82,29 @@ class CategoryGenreViewSet(
     viewsets.GenericViewSet,
 ):
     """Кастомный класс для категорий и жанров."""
-    # permission_classes = ()
+    permission_classes = (IsAdminOrReadOnlyTwo,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name', 'slug',)
+    pagination_class = LimitOffsetPagination
 
 
 class CategoryViewSet(CategoryGenreViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    pagination_class = LimitOffsetPagination
-    search_fields = ('name',)
 
 
 class GenreViewSet(CategoryGenreViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = ('name',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Класс для модели Title"""
     review = Review.objects.all()
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = (
-        'name',
-        'year',
-        'category__slug',
-        'genre_slug',
-    )
-    # permission_classes = ()
-    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAdminOrReadOnlyTwo,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitlesFilter
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'PUT',):

@@ -1,8 +1,8 @@
 from rest_framework import permissions
-from rest_framework.permissions import BasePermission
+# from rest_framework.permissions import BasePermission
 
 
-class IsAdmin(BasePermission):
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
@@ -10,7 +10,7 @@ class IsAdmin(BasePermission):
         return obj.role == 'admin'
 
 
-# class IsModeratorUser(BasePermission):
+# class IsModeratorUser(permissions.BasePermission):
 #     def has_permission(self, request, view):
 #         return request.user.is_authenticated and request.user.is_moderator
 #
@@ -20,7 +20,7 @@ class IsAdmin(BasePermission):
 #         return False
 
 
-class IsAdminOrReadOnly(BasePermission):
+class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.method in permissions.SAFE_METHODS
 
@@ -28,16 +28,16 @@ class IsAdminOrReadOnly(BasePermission):
         return obj.role == 'admin'
 
 
-# class ReadOnly(BasePermission):
+# class ReadOnly(permissions.BasePermission):
 #     def has_permission(self, request, view):
 #         return request.method in permissions.SAFE_METHODS
 
-class IsUser(BasePermission):
+class IsUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
 
-class IsAdminOrModeratorOrOwner(BasePermission):
+class IsAdminOrModeratorOrOwner(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
@@ -45,3 +45,12 @@ class IsAdminOrModeratorOrOwner(BasePermission):
         return (request.role == 'admin'
                 or request.role == 'moderator'
                 or obj.username == request.username)
+
+
+class IsAdminOrReadOnlyTwo(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.method in permissions.SAFE_METHODS or (
+                request.user.is_authenticated and request.user.role == 'admin'
+            )
+        )

@@ -148,6 +148,8 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор модели Title"""
     rating = serializers.FloatField()
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
 
     class Meta:
         fields = (
