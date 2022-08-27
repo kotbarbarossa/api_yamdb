@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
 from django.shortcuts import get_object_or_404
-from rest_framework import exceptions
+from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 
 from rest_framework_simplejwt.settings import api_settings
@@ -9,13 +9,37 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import User, ConfirmationCode
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import User, ConfirmationCode
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())])
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+    def update(self, instance, validated_data):
+        print('\n\n\n\n\n\n\n')
+        print(instance.is_staff)
+        print('\n\n\n\n\n\n\n')
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name',
+                                                 instance.first_name)
+        instance.last_name = validated_data.get('last_name',
+                                                instance.last_name)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.role = validated_data.get('role', instance.role)
+        if validated_data.get('role') == 'admin':
+            instance.is_staff = True
+        if validated_data.get('role') == 'moderator':
+            instance.is_moderator = True
+        instance.save()
+        return instance
 
 
 class UserMeSerializer(serializers.ModelSerializer):
@@ -37,7 +61,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         name = 'me'
-        if validated_data['username'] == name:
+        if validated_data.get('username') == name:
             raise exceptions.ValidationError(
                 f'Использовать имя {name} в качестве username запрещено.'
             )

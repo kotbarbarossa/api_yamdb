@@ -2,6 +2,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from reviews.managers import CustomUserManager
+
 
 class User(AbstractUser):
     """Модель пользователя."""
@@ -23,6 +25,9 @@ class User(AbstractUser):
         'Биография',
         blank=True
     )
+    is_moderator = models.BooleanField('Moderator status', blank=True,
+                                       default=False)
+    objects = CustomUserManager()
 
 
 class ConfirmationCode(models.Model):
