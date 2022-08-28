@@ -39,6 +39,9 @@ class User(AbstractUser):
                                        default=False)
     objects = CustomUserManager()
 
+    class Meta:
+        ordering = ['-id']
+
 
 class ConfirmationCode(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE)
@@ -174,6 +177,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        ordering = ['-id']
         constraints = [
             models.UniqueConstraint(
                 name='unique_review',
@@ -211,6 +215,9 @@ class Comment(models.Model):
         help_text='Дата и время публикации',
         db_index=True
     )
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.text[:15]
