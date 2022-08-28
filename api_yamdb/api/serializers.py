@@ -217,12 +217,16 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_pub_date(self, obj):
         return obj.pub_date.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # def validate(self, data):
-    #     title_id = (
-    #       self.context['request'].parser_context['kwargs']['title_id']
-    #      )
-    #     title = Title.objects.filter(id=title_id)
-    #     text = data['text']
-    #     if Review.objects.filter(title_id=title, text=text):
-    #         raise serializers.ValidationError('Уже есть такой отзыв!')
-    #     return data
+    def validate(self, data):
+        title_id = (
+            self.context['request'].parser_context['kwargs']['title_id']
+        )
+        title = get_object_or_404(Title, id=title_id)
+        if (
+            Review.objects.filter(
+                title=title, author=self.context['request'].user
+            ).exists()
+            and self.context['request'].method != 'PATCH'
+        ):
+            raise serializers.ValidationError('Вы уже оставляли отзыв!')
+        return data

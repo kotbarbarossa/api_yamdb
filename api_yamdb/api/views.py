@@ -9,6 +9,7 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from api_yamdb import settings
+from .permissions import ReviewCommentPermission
 from reviews.models import ConfirmationCode, User
 from .serializers import (UserSerializer, UserMeSerializer,
                           MyTokenObtainPairSerializer, SignUpSerializer)
@@ -38,8 +39,10 @@ class SignUpView(APIView):
             user = User.objects.get(username=request.data.get('username'))
             subject = 'Confirmation code'
             message = token_hex(16)
-            ConfirmationCode.objects.create(user=user,
-                                 token=message)
+            ConfirmationCode.objects.create(
+                user=user,
+                token=message
+            )
             send_mail(subject, message, settings.EMAIL_HOST_USER,
                       [request.data.get('email')])
 
@@ -102,6 +105,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     review = Review.objects.all()
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+
     search_fields = (
         'name',
         'year',
@@ -120,6 +124,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Получение и изменение комментариев."""
     serializer_class = CommentSerializer
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self, *args, **kwargs):
         title_id = self.kwargs.get('title_id')
@@ -139,7 +144,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Получение и изменение публикаций."""
     serializer_class = ReviewSerializer
-    # pagination_class = LimitOffsetPagination
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self, *args, **kwargs):
         title_id = int(self.kwargs.get('title_id'))

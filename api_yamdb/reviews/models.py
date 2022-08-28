@@ -162,6 +162,14 @@ class Review(models.Model):
         db_index=True
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_review',
+                fields=['title', 'author'],
+            )
+        ]
+
     def __str__(self):
         return self.text[:20]
 
