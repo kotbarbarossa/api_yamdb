@@ -86,6 +86,7 @@ class CategoryGenreViewSet(
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name', 'slug',)
     pagination_class = LimitOffsetPagination
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(CategoryGenreViewSet):
