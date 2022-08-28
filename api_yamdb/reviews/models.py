@@ -1,8 +1,18 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+import datetime as dt
+from django.core.exceptions import ValidationError
 from reviews.managers import CustomUserManager
+
+
+def year_validator(year):
+    """Проверка что год не превышает текущий."""
+    if year > dt.datetime.now().year:
+        raise ValidationError(
+            'Год выхода произведения не может превышать текущий.'
+        )
+    return year
 
 
 class User(AbstractUser):
@@ -74,7 +84,9 @@ class Title(models.Model):
         blank=True,
         null=True,
         verbose_name='Описание')
-    year = models.IntegerField(verbose_name='Год выхода')
+    year = models.IntegerField(
+        validators=[year_validator],
+        verbose_name='Год выхода')
     category = models.ForeignKey(
         'Category',
         blank=True,
@@ -92,7 +104,6 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('name',)
         verbose_name = ('Title')
         verbose_name_plural = ('Titles')
 
