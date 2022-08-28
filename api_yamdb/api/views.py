@@ -26,7 +26,7 @@ from .serializers import (
     TitleSerializer,
     TitleWriteSerializer,
 )
-from .permissions import IsAdminOrReadOnlyTwo
+from .permissions import IsAdminOrReadOnlyTwo, ReviewCommentPermission
 from .filters import TitlesFilter
 
 
@@ -116,6 +116,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Получение и изменение комментариев."""
     serializer_class = CommentSerializer
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self, *args, **kwargs):
         title_id = self.kwargs.get('title_id')
@@ -135,7 +136,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Получение и изменение публикаций."""
     serializer_class = ReviewSerializer
-    # pagination_class = LimitOffsetPagination
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self, *args, **kwargs):
         title_id = int(self.kwargs.get('title_id'))

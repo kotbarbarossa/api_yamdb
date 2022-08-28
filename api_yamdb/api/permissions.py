@@ -25,7 +25,11 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS
 
     def has_object_permission(self, request, view, obj):
-        return obj.role == 'admin'
+        print('Helllllllll')
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.role == 'admin'
+        # return obj.role == 'admin'
 
 
 # class ReadOnly(permissions.BasePermission):
@@ -54,3 +58,15 @@ class IsAdminOrReadOnlyTwo(permissions.BasePermission):
                 request.user.is_authenticated and request.user.role == 'admin'
             )
         )
+
+
+class ReviewCommentPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.role == 'admin'
+                or request.user.role == 'moderator'
+                or request.user.username == obj.author.username)
