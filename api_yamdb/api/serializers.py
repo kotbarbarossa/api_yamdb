@@ -23,9 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
 
     def update(self, instance, validated_data):
-        print('\n\n\n\n\n\n\n')
-        print(instance.is_staff)
-        print('\n\n\n\n\n\n\n')
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name',
@@ -117,7 +114,6 @@ class MyTokenObtainPairSerializer(MyTokenObtainSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        print(data)
         refresh = self.get_token(self.user)
 
         data['refresh'] = str(refresh)

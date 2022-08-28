@@ -1,24 +1,26 @@
 from secrets import token_hex
 
 from django.core.mail import send_mail
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, permissions, viewsets, mixins, filters
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from api_yamdb import settings
 from reviews.models import ConfirmationCode, User
-from .serializers import (UserSerializer, UserMeSerializer,
-                          MyTokenObtainPairSerializer, SignUpSerializer)
-from rest_framework import viewsets, mixins, filters
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from reviews.models import Category, Genre, Title, Review
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (
+    UserSerializer,
+    UserMeSerializer,
+    MyTokenObtainPairSerializer,
+    SignUpSerializer,
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
@@ -64,15 +66,24 @@ class UserViewSet(ModelViewSet):
     search_fields = ('username',)
     lookup_field = 'username'
 
-
-class UserMeViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                    GenericViewSet):
-    serializer_class = UserMeSerializer
-
-    def get_queryset(self):
-        user_id = self.kwargs.get('user_id')
-        user = get_object_or_404(User, pk=user_id)
-        return user
+    @action(detail=False, methods=['get', 'patch'],
+            permission_classes=[permissions.IsAuthenticated],
+            serializer_class=UserMeSerializer)
+    def me(self, request):
+        user = get_object_or_404(User, pk=request.user.id)
+        serializer = UserMeSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            user.username = serializer.validated_data.get('username',
+                                                          user.username)
+            user.email = serializer.validated_data.get('email', user.email)
+            user.first_name = serializer.validated_data.get('first_name',
+                                                            user.first_name)
+            user.last_name = serializer.validated_data.get('last_name',
+                                                           user.last_name)
+            user.bio = serializer.validated_data.get('bio', user.bio)
+            user.save()
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
 
 
 class CategoryGenreViewSet(
@@ -135,6 +146,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Получение и изменение публикаций."""
     serializer_class = ReviewSerializer
+
     # pagination_class = LimitOffsetPagination
 
     def get_queryset(self, *args, **kwargs):
