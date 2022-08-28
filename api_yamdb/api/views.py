@@ -102,10 +102,13 @@ class GenreViewSet(CategoryGenreViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Класс для модели Title"""
     review = Review.objects.all()
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('name')
     permission_classes = (IsAdminOrReadOnlyTwo,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
+    ordering_fields = ('name', 'year',)
+    ordering = ('year',)
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'PUT',):

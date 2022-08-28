@@ -3,7 +3,7 @@ from django.contrib.auth.models import update_last_login
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
-
+import datetime as dt
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import User, ConfirmationCode
@@ -186,6 +186,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             'genre',
         )
         model = Title
+
+    def validate_year(self, year):
+        if year > dt.datetime.now().year:
+            raise serializers.ValidationError(
+                'Год выхода произведения не может превышать текущий.'
+            )
+        return year
 
 
 class CommentSerializer(serializers.ModelSerializer):
