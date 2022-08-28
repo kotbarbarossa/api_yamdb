@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, permissions, viewsets, mixins, filters
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from api_yamdb import settings
@@ -28,11 +28,13 @@ from .serializers import (
     TitleSerializer,
     TitleWriteSerializer,
 )
-from .permissions import IsAdminOrReadOnlyTwo, ReviewCommentPermission
+
+from .permissions import IsAdminOrReadOnly, ReviewCommentPermission
 from .filters import TitlesFilter
 
 
 class SignUpView(APIView):
+    """Класс для регистрации."""
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -54,11 +56,13 @@ class SignUpView(APIView):
 
 
 class MyTokenObtainPairView(TokenViewBase):
+    """Класс для получения токена."""
     serializer_class = MyTokenObtainPairSerializer
     permission_classes = (AllowAny,)
 
 
 class UserViewSet(ModelViewSet):
+    """Вьюсет для User."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
@@ -93,7 +97,7 @@ class CategoryGenreViewSet(
     viewsets.GenericViewSet,
 ):
     """Кастомный класс для категорий и жанров."""
-    permission_classes = (IsAdminOrReadOnlyTwo,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name', 'slug',)
     pagination_class = LimitOffsetPagination
@@ -111,11 +115,11 @@ class GenreViewSet(CategoryGenreViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """Класс для модели Title"""
+    """Класс для модели Title."""
     review = Review.objects.all()
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('name')
-    permission_classes = (IsAdminOrReadOnlyTwo,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     ordering_fields = ('name', 'year',)

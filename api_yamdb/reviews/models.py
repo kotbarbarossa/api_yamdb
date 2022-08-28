@@ -55,8 +55,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name = ('Category')
-        verbose_name_plural = ('Categories')
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
 
     def __str__(self):
         return self.slug
@@ -69,8 +69,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name = ('Genre')
-        verbose_name_plural = ('Genres')
+        verbose_name = 'Genre'
+        verbose_name_plural = 'Genres'
 
     def __str__(self):
         return self.slug
@@ -107,8 +107,8 @@ class Title(models.Model):
     )
 
     class Meta:
-        verbose_name = ('Title')
-        verbose_name_plural = ('Titles')
+        verbose_name = 'Title'
+        verbose_name_plural = 'Titles'
 
     def __str__(self):
         return self.name
@@ -129,8 +129,8 @@ class TitleGenre(models.Model):
 
     class Meta:
         ordering = ('title_id',)
-        verbose_name = ('Title Genre')
-        verbose_name_plural = ('Title Genres')
+        verbose_name = 'Title Genre'
+        verbose_name_plural = 'Title Genres'
         constraints = [
             models.UniqueConstraint(fields=['title_id', 'genre_id'],
                                     name=('unique genre')),
