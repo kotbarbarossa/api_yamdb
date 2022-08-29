@@ -162,6 +162,15 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'rating',
         )
+        read_only_fields = (
+            'id',
+            'name',
+            'description',
+            'year',
+            'category',
+            'genre',
+            'rating',
+        )
         model = Title
 
 

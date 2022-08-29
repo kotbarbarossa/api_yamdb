@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from reviews.models import Title
 
 
-class TitlesFilter(filters.FilterSet):
+class TitleFilter(filters.FilterSet):
     """
     Фильтер для поиска по полям произведения.
     """
@@ -13,4 +13,4 @@ class TitlesFilter(filters.FilterSet):
 
     class Meta:
         model = Title
-        fields = ['genre', 'category', 'name', 'year']
+        fields = ('genre', 'category', 'name', 'year',)

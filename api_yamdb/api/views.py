@@ -30,7 +30,7 @@ from .serializers import (
 )
 
 from .permissions import IsAdminOrReadOnly, ReviewCommentPermission
-from .filters import TitlesFilter
+from .filters import TitleFilter
 
 
 class SignUpView(APIView):
@@ -121,7 +121,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')).order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = TitlesFilter
+    filterset_class = TitleFilter
     ordering_fields = ('name', 'year',)
     ordering = ('year',)
 
