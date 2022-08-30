@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from reviews.managers import CustomUserManager
 
 # длина вывода текстовой информации для моделей
-SIZE_STR: int = 15
+STRING_LENGHT: int = 20
 
 
 def year_validator(year):
@@ -189,7 +189,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text[:SIZE_STR]
+        return self.text[:STRING_LENGHT]
 
 
 class Comment(models.Model):
@@ -223,4 +223,4 @@ class Comment(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.text[:SIZE_STR]
+        return self.text[:STRING_LENGHT]
