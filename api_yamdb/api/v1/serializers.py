@@ -1,18 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, exceptions
+from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueValidator
-
+import datetime as dt
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, ConfirmationCode
-from rest_framework import serializers
-from reviews.models import Category, Comment, Genre, Review, Title
-from reviews.models import User, ConfirmationCode
+from reviews.models import (Category, Comment, Genre,
+                            Review, Title, User, ConfirmationCode)
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор модели User."""
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())])
@@ -23,9 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
 
     def update(self, instance, validated_data):
-        print('\n\n\n\n\n\n\n')
-        print(instance.is_staff)
-        print('\n\n\n\n\n\n\n')
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name',
@@ -34,15 +30,18 @@ class UserSerializer(serializers.ModelSerializer):
                                                 instance.last_name)
         instance.bio = validated_data.get('bio', instance.bio)
         instance.role = validated_data.get('role', instance.role)
-        if validated_data.get('role') == 'admin':
-            instance.is_staff = True
-        if validated_data.get('role') == 'moderator':
-            instance.is_moderator = True
+        # if validated_data.get('role') == User.ADMIN:
+        #     instance.is_staff = True
+        # if validated_data.get('role') == User.MODERATOR:
+        #     instance.is_moderator = True
         instance.save()
         return instance
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для получения и обновления информации о авторе.
+    """
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
@@ -51,6 +50,7 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    """Сериализатор для аутентификации."""
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())])
@@ -69,6 +69,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class MyTokenObtainSerializer(serializers.Serializer):
+    """Сериализатор для получения токена."""
     username_field = get_user_model().USERNAME_FIELD
 
     default_error_messages = {
@@ -111,13 +112,13 @@ class MyTokenObtainSerializer(serializers.Serializer):
 
 
 class MyTokenObtainPairSerializer(MyTokenObtainSerializer):
+    """Сериализатор для получения токена."""
     @classmethod
     def get_token(cls, user):
         return RefreshToken.for_user(user)
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        print(data)
         refresh = self.get_token(self.user)
 
         data['refresh'] = str(refresh)
@@ -130,7 +131,7 @@ class MyTokenObtainPairSerializer(MyTokenObtainSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор модели Category"""
+    """Сериализатор модели Category."""
 
     class Meta:
         fields = ('name', 'slug',)
@@ -138,7 +139,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Genre"""
+    """Сериализатор модели Genre."""
 
     class Meta:
         fields = ('name', 'slug',)
@@ -146,11 +147,22 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Title"""
+    """Сериализатор модели Title."""
     rating = serializers.FloatField()
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
 
     class Meta:
         fields = (
+            'id',
+            'name',
+            'description',
+            'year',
+            'category',
+            'genre',
+            'rating',
+        )
+        read_only_fields = (
             'id',
             'name',
             'description',
@@ -163,7 +175,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Title для методов POST и PATCH"""
+    """Сериализатор модели Title для методов POST и PATCH."""
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         many=True,
@@ -184,6 +196,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             'genre',
         )
         model = Title
+
+    def validate_year(self, year):
+        if year > dt.datetime.now().year:
+            raise serializers.ValidationError(
+                'Год выхода произведения не может превышать текущий.'
+            )
+        return year
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -223,10 +242,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
         title = get_object_or_404(Title, id=title_id)
         if (
-            Review.objects.filter(
-                title=title, author=self.context['request'].user
-            ).exists()
-            and self.context['request'].method != 'PATCH'
+                Review.objects.filter(
+                    title=title, author=self.context['request'].user
+                ).exists()
+                and self.context['request'].method != 'PATCH'
         ):
             raise serializers.ValidationError('Вы уже оставляли отзыв!')
         return data

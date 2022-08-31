@@ -1,17 +1,28 @@
 from csv import DictReader
 from datetime import datetime
 from django.core.management import BaseCommand
+import logging
+import sys
 
 from ...models import (
     Category, Comment, Genre, Review, Title, TitleGenre, User
 )
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(stream=sys.stdout)
+logger.addHandler(handler)
+formatter = logging.Formatter(
+    '%(asctime)s, [%(levelname)s] %(message)s'
+)
+handler.setFormatter(formatter)
 
 
 class Command(BaseCommand):
     help = 'Загрузка данных в БД'
 
     def handle(self, *args, **options):
-        print('Удаление данных в БД')
+        logger.info('Удаление данных в БД')
         Genre.objects.all().delete()
         User.objects.all().delete()
         Title.objects.all().delete()
@@ -20,7 +31,7 @@ class Command(BaseCommand):
         Review.objects.all().delete()
         Comment.objects.all().delete()
 
-        print('Загрузка пользователей в БД')
+        logger.info('Загрузка пользователей в БД')
         users = []
         for row in DictReader(
             open('./static/data/users.csv', encoding='utf-8')
@@ -38,7 +49,7 @@ class Command(BaseCommand):
             )
         User.objects.bulk_create(users)
 
-        print('Загрузка жанров в БД')
+        logger.info('Загрузка жанров в БД')
         genres = []
         for row in DictReader(
             open('./static/data/genre.csv', encoding='utf-8')
@@ -52,7 +63,7 @@ class Command(BaseCommand):
             )
         Genre.objects.bulk_create(genres)
 
-        print('Загрузка категорий в БД')
+        logger.info('Загрузка категорий в БД')
         categories = []
         for row in DictReader(
             open('./static/data/category.csv', encoding='utf-8')
@@ -66,7 +77,7 @@ class Command(BaseCommand):
             )
         Category.objects.bulk_create(categories)
 
-        print('Загрузка произведений в БД')
+        logger.info('Загрузка произведений в БД')
         titles = []
         for row in DictReader(
             open('./static/data/titles.csv', encoding='utf-8')
@@ -81,7 +92,7 @@ class Command(BaseCommand):
             )
         Title.objects.bulk_create(titles)
 
-        print('Загрузка связей произведения и жанров в БД')
+        logger.info('Загрузка связей произведения и жанров в БД')
         titles_genres = []
         for row in DictReader(
             open('./static/data/genre_title.csv', encoding='utf-8')
@@ -95,7 +106,7 @@ class Command(BaseCommand):
             )
         TitleGenre.objects.bulk_create(titles_genres)
 
-        print('Загрузка связей произведения и жанров в БД')
+        logger.info('Загрузка ревью в БД')
         reviews = []
         for row in DictReader(
             open('./static/data/review.csv', encoding='utf-8')
@@ -115,7 +126,7 @@ class Command(BaseCommand):
             )
         Review.objects.bulk_create(reviews)
 
-        print('Загрузка комментариев к ревью в БД')
+        logger.info('Загрузка комментариев к ревью в БД')
         comments = []
         for row in DictReader(
             open('./static/data/comments.csv', encoding='utf-8')
@@ -133,3 +144,4 @@ class Command(BaseCommand):
                 )
             )
         Comment.objects.bulk_create(comments)
+        logger.info('Загрузка в БД завершена')

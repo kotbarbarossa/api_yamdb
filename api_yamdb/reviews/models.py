@@ -1,33 +1,57 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+import datetime as dt
+from django.core.exceptions import ValidationError
 from reviews.managers import CustomUserManager
+
+# длина вывода текстовой информации для моделей
+STRING_LENGHT: int = 20
+
+
+def year_validator(year):
+    """Проверка что год не превышает текущий."""
+    if year > dt.datetime.now().year:
+        raise ValidationError(
+            'Год выхода произведения не может превышать текущий.'
+        )
+    return year
 
 
 class User(AbstractUser):
     """Модель пользователя."""
-    ROLE = (
-        (
-            ('user', 'Пользователь'),
-            ('admin', 'Администратор'),
-            ('moderator', 'Модератор'),
-        )
-    )
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    ROLE = [
+        (USER, 'Пользователь'),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+    ]
 
     role = models.CharField(
         'Пользовательская роль',
-        max_length=10,
+        max_length=20,
         choices=ROLE,
-        default='user'
+        default=USER
     )
     bio = models.TextField(
         'Биография',
         blank=True
     )
-    is_moderator = models.BooleanField('Moderator status', blank=True,
-                                       default=False)
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == self.ADMIN
+
     objects = CustomUserManager()
+
+    class Meta:
+        ordering = ['-id']
 
 
 class ConfirmationCode(models.Model):
@@ -42,8 +66,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name = ('Category')
-        verbose_name_plural = ('Categories')
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
 
     def __str__(self):
         return self.slug
@@ -56,8 +80,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name = ('Genre')
-        verbose_name_plural = ('Genres')
+        verbose_name = 'Genre'
+        verbose_name_plural = 'Genres'
 
     def __str__(self):
         return self.slug
@@ -74,7 +98,9 @@ class Title(models.Model):
         blank=True,
         null=True,
         verbose_name='Описание')
-    year = models.IntegerField(verbose_name='Год выхода')
+    year = models.IntegerField(
+        validators=[year_validator],
+        verbose_name='Год выхода')
     category = models.ForeignKey(
         'Category',
         blank=True,
@@ -92,9 +118,8 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('name',)
-        verbose_name = ('Title')
-        verbose_name_plural = ('Titles')
+        verbose_name = 'Title'
+        verbose_name_plural = 'Titles'
 
     def __str__(self):
         return self.name
@@ -115,8 +140,8 @@ class TitleGenre(models.Model):
 
     class Meta:
         ordering = ('title_id',)
-        verbose_name = ('Title Genre')
-        verbose_name_plural = ('Title Genres')
+        verbose_name = 'Title Genre'
+        verbose_name_plural = 'Title Genres'
         constraints = [
             models.UniqueConstraint(fields=['title_id', 'genre_id'],
                                     name=('unique genre')),
@@ -146,7 +171,7 @@ class Review(models.Model):
         verbose_name='Пользователь',
         help_text='Пользователь, который производит ревью',
     )
-    score = models.IntegerField(
+    score = models.PositiveIntegerField(
         default=1,
         validators=[
             MaxValueValidator(10),
@@ -163,6 +188,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        ordering = ['-id']
         constraints = [
             models.UniqueConstraint(
                 name='unique_review',
@@ -171,7 +197,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text[:20]
+        return self.text[:STRING_LENGHT]
 
 
 class Comment(models.Model):
@@ -201,5 +227,8 @@ class Comment(models.Model):
         db_index=True
     )
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
-        return self.text[:15]
+        return self.text[:STRING_LENGHT]
