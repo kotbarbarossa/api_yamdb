@@ -30,10 +30,10 @@ class UserSerializer(serializers.ModelSerializer):
                                                 instance.last_name)
         instance.bio = validated_data.get('bio', instance.bio)
         instance.role = validated_data.get('role', instance.role)
-        if validated_data.get('role') == 'admin':
-            instance.is_staff = True
-        if validated_data.get('role') == 'moderator':
-            instance.is_moderator = True
+        # if validated_data.get('role') == User.ADMIN:
+        #     instance.is_staff = True
+        # if validated_data.get('role') == User.MODERATOR:
+        #     instance.is_moderator = True
         instance.save()
         return instance
 

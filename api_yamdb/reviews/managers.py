@@ -5,8 +5,6 @@ class CustomUserManager(UserManager):
     def create_user(self, username, email=None, password=None, **extra_fields):
         if extra_fields.get('role') == 'admin':
             extra_fields.setdefault('is_staff', True)
-        if extra_fields.get('role') == 'moderator':
-            extra_fields.setdefault('is_moderator', True)
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(username, email, password, **extra_fields)
