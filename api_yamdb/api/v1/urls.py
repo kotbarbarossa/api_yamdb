@@ -8,7 +8,7 @@ from .views import (
     ReviewViewSet,
     SignUpView,
     UserViewSet,
-    MyTokenObtainPairView
+    TokenObtainPairView
 )
 
 v1_router = routers.DefaultRouter()
@@ -29,7 +29,7 @@ v1_router.register(
 
 auth_patterns = [
     path('signup/', SignUpView.as_view(), name='signup'),
-    path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
 
 urlpatterns = [

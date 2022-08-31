@@ -23,11 +23,14 @@ class User(AbstractUser):
     USER = 'user'
     ADMIN = 'admin'
     MODERATOR = 'moderator'
-    ROLE = [
-        (USER, 'Пользователь'),
-        (ADMIN, 'Администратор'),
-        (MODERATOR, 'Модератор'),
-    ]
+
+    ROLE = (
+        (
+            (USER, 'Пользователь'),
+            (ADMIN, 'Администратор'),
+            (MODERATOR, 'Модератор'),
+        )
+    )
 
     role = models.CharField(
         'Пользовательская роль',
