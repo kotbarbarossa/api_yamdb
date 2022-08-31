@@ -20,26 +20,34 @@ def year_validator(year):
 
 class User(AbstractUser):
     """Модель пользователя."""
-    ROLE = (
-        (
-            ('user', 'Пользователь'),
-            ('admin', 'Администратор'),
-            ('moderator', 'Модератор'),
-        )
-    )
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    ROLE = [
+        (USER, 'Пользователь'),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+    ]
 
     role = models.CharField(
         'Пользовательская роль',
-        max_length=10,
+        max_length=20,
         choices=ROLE,
-        default='user'
+        default=USER
     )
     bio = models.TextField(
         'Биография',
         blank=True
     )
-    is_moderator = models.BooleanField('Moderator status', blank=True,
-                                       default=False)
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == self.ADMIN
+
     objects = CustomUserManager()
 
     class Meta:
