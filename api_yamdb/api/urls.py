@@ -8,7 +8,7 @@ from api.views import (
     ReviewViewSet,
     SignUpView,
     UserViewSet,
-    MyTokenObtainPairView
+    TokenObtainPairView
 )
 
 v1_router = routers.DefaultRouter()
@@ -27,9 +27,16 @@ v1_router.register(
     basename='comment'
 )
 
+jwt_patterns = [
+    path('signup/', SignUpView.as_view(), name='signup'),
+    path('token/', TokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
+]
+
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
-    path('v1/auth/signup/', SignUpView.as_view(), name='signup'),
-    path('v1/auth/token/', MyTokenObtainPairView.as_view(),
-         name='token_obtain_pair'),
+    path('v1/auth/', include(jwt_patterns)),
+    # path('v1/auth/signup/', SignUpView.as_view(), name='signup'),
+    # path('v1/auth/token/', MyTokenObtainPairView.as_view(),
+    #      name='token_obtain_pair'),
 ]

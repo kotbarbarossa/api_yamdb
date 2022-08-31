@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, permissions, viewsets, mixins, filters
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenViewBase
 
 from api_yamdb import settings
@@ -19,14 +20,13 @@ from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (
     UserSerializer,
     UserMeSerializer,
-    MyTokenObtainPairSerializer,
     SignUpSerializer,
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
     TitleSerializer,
-    TitleWriteSerializer,
+    TitleWriteSerializer, ConfirmationCodeSerializer,
 )
 
 from .permissions import IsAdminOrReadOnly, ReviewCommentPermission
@@ -55,10 +55,25 @@ class SignUpView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MyTokenObtainPairView(TokenViewBase):
+class TokenObtainPairView(APIView):
     """Класс для получения токена."""
-    serializer_class = MyTokenObtainPairSerializer
     permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = ConfirmationCodeSerializer(data=request.data)
+        if serializer.is_valid():
+            user = get_object_or_404(User,
+                                     username=request.data.get('username'))
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(ModelViewSet):
@@ -75,18 +90,11 @@ class UserViewSet(ModelViewSet):
             serializer_class=UserMeSerializer)
     def me(self, request):
         user = get_object_or_404(User, pk=request.user.id)
-        serializer = UserMeSerializer(data=request.data, partial=True)
+        serializer = UserMeSerializer(data=request.data, instance=user,
+                                      partial=True)
         if serializer.is_valid():
-            user.username = serializer.validated_data.get('username',
-                                                          user.username)
-            user.email = serializer.validated_data.get('email', user.email)
-            user.first_name = serializer.validated_data.get('first_name',
-                                                            user.first_name)
-            user.last_name = serializer.validated_data.get('last_name',
-                                                           user.last_name)
-            user.bio = serializer.validated_data.get('bio', user.bio)
-            user.save()
-        serializer = self.get_serializer(user)
+            serializer.save()
+        # serializer = self.get_serializer(user)
         return Response(serializer.data)
 
 

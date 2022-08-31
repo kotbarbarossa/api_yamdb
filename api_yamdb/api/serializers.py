@@ -1,11 +1,7 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import update_last_login
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueValidator
 import datetime as dt
-from rest_framework_simplejwt.settings import api_settings
-from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import (Category, Comment, Genre,
                             Review, Title, User, ConfirmationCode)
 
@@ -42,6 +38,7 @@ class UserMeSerializer(serializers.ModelSerializer):
     """
     Сериализатор для получения и обновления информации о авторе.
     """
+
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name',
@@ -59,45 +56,27 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def create(self, validated_data):
+    def validate(self, attrs):
         name = 'me'
-        if validated_data.get('username') == name:
+        if attrs.get('username') == name:
             raise exceptions.ValidationError(
                 f'Использовать имя {name} в качестве username запрещено.'
             )
-        return User.objects.create(**validated_data)
+        return attrs
 
 
-class MyTokenObtainSerializer(serializers.Serializer):
-    """Сериализатор для получения токена."""
-    username_field = get_user_model().USERNAME_FIELD
+class ConfirmationCodeSerializer(serializers.ModelSerializer):
+    username = serializers.SlugField(required=True)
+    confirmation_code = serializers.SlugField(required=True)
 
-    default_error_messages = {
-        'no_active_account': ('No active account found '
-                              'with the given credentials')
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields[self.username_field] = serializers.CharField()
-        self.fields['confirmation_code'] = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
 
     def validate(self, attrs):
-        authenticate_kwargs = {
-            self.username_field: attrs['username'],
-            'confirmation_code': attrs['confirmation_code'],
-        }
-
+        user = get_object_or_404(User, username=attrs['username'])
         try:
-            authenticate_kwargs['request'] = self.context['request']
-        except KeyError:
-            pass
-
-        self.user = get_object_or_404(User, username=attrs['username'])
-
-        try:
-            code = ConfirmationCode.objects.get(user=self.user)
+            code = ConfirmationCode.objects.get(user=user)
         except ConfirmationCode.DoesNotExist:
             raise exceptions.ValidationError(
                 'Отсутствует confirmation code'
@@ -107,27 +86,7 @@ class MyTokenObtainSerializer(serializers.Serializer):
                 'Некорректный confirmation code'
             )
         code.delete()
-
-        return {}
-
-
-class MyTokenObtainPairSerializer(MyTokenObtainSerializer):
-    """Сериализатор для получения токена."""
-    @classmethod
-    def get_token(cls, user):
-        return RefreshToken.for_user(user)
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-
-        if api_settings.UPDATE_LAST_LOGIN:
-            update_last_login(None, self.user)
-
-        return data
+        return attrs
 
 
 class CategorySerializer(serializers.ModelSerializer):

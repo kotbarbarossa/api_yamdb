@@ -17,19 +17,22 @@ def year_validator(year):
 
 class User(AbstractUser):
     """Модель пользователя."""
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
     ROLE = (
         (
-            ('user', 'Пользователь'),
-            ('admin', 'Администратор'),
-            ('moderator', 'Модератор'),
+            (USER, 'Пользователь'),
+            (ADMIN, 'Администратор'),
+            (MODERATOR, 'Модератор'),
         )
     )
 
     role = models.CharField(
         'Пользовательская роль',
-        max_length=10,
+        max_length=50,
         choices=ROLE,
-        default='user'
+        default=USER
     )
     bio = models.TextField(
         'Биография',
