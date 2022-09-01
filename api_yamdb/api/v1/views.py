@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from rest_framework import status, permissions, viewsets, mixins, filters
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenViewBase
 
 from api_yamdb import settings
 from reviews.models import ConfirmationCode, User
@@ -86,8 +85,7 @@ class UserViewSet(ModelViewSet):
     lookup_field = 'username'
 
     @action(detail=False, methods=['get', 'patch'],
-            permission_classes=[permissions.IsAuthenticated],
-            serializer_class=UserMeSerializer)
+            permission_classes=[permissions.IsAuthenticated])
     def me(self, request):
         user = get_object_or_404(User, pk=request.user.id)
         serializer = UserMeSerializer(data=request.data, instance=user,
